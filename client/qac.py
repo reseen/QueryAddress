@@ -1,8 +1,12 @@
 # 该脚本为客户端响应程序
+import os
 import sys
 import socket
 import datetime
+import _thread
 
+from time import sleep
+from win10toast import ToastNotifier
 
 hostFile = "C:\\Windows\\System32\\drivers\\etc\\hosts"
 hostBack = "C:\\Windows\\System32\\drivers\\etc\\hosts.qac.bak"
@@ -15,6 +19,23 @@ def logWrite(msg):
     with open(path, 'a+') as fp:
         fp.write('%s\n' % msg)
         fp.close()
+
+
+# 显示windows消息
+def showToast(message, time):
+    toaster = ToastNotifier()
+    toaster.show_toast("Termux IP Check",
+                       message,
+                       icon_path=None,
+                       duration=time,
+                       threaded=True)
+
+
+# 发送windows消息
+def sendToastMessage(message, time):
+    _thread.start_new_thread(showToast, (message, time))
+    sleep(0.1)
+
 
 
 # 获取时间
@@ -44,6 +65,7 @@ def modifyHosts(ip):
             fw.write(li)
         fw.write("%s termux.miscoco.com" % ip)
         logWrite("%s hosts file update [tag]" % getTime())
+        sendToastMessage("hosts file update \nIP:%s" % ip, 600)
 
 
 # 检测服务器
